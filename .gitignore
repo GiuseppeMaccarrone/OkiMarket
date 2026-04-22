@@ -1,0 +1,30 @@
+# .gitignore
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
+# Cartelle di ambiente e dipendenze
+node_modules/
+venv/
+env/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE e editor
+.vscode/
+.idea/
+*.swp
+
+# File di build e log
+dist/
+build/
+*.log
+*.tmp
+
+# File di configurazione sensibili
+.env
+.env.local
+.env.*.local
