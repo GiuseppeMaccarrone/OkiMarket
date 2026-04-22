@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. DATABASE REALE (Per quando l'app è in esecuzione)
+  # ==========================================
+  db:
+    image: postgres:16-alpine
+    restart: always
+    container_name: postgres
+    hostname: db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # ==========================================
+  # 2. IL GUARDIANO (Esegue i test E2E e Unitari)
+  # ==========================================
+  backend-tester:
+    build: app_be
+    container_name: app-be-tester
+    # Sovrascrive il comando per lanciare la suite di test
+    command: ["python", "-m", "pytest", "tests/", "-v", "-o", "asyncio_mode=auto", "-o", "asyncio_default_fixture_loop_scope=function"]
+    env_file:
+      - .env
+    volumes:
+      # CRITICO: Il "citofono" di Docker. Serve a testcontainers
+      # per creare il mini-database temporaneo isolato dal 'db' qui sopra.
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # ==========================================
+  # 3. L'APPLICAZIONE (L'API FastAPI)
+  # ==========================================
+  backend:
+    build: app_be
+    container_name: app-be
+    hostname: app-be
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      # 1. Aspetta che il database reale sia acceso
+      db:
+        condition: service_started
+      # 2. LA MAGIA: Aspetta che i test siano finiti e siano VERDI (Exit Code 0)
+      backend-tester:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
