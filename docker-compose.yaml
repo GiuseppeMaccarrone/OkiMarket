@@ -1,9 +1,6 @@
 version: '3.8'
 
 services:
-  # ==========================================
-  # 1. DATABASE REALE (Per quando l'app è in esecuzione)
-  # ==========================================
   db:
     image: postgres:16-alpine
     restart: always
@@ -18,9 +15,6 @@ services:
     ports:
       - "5432:5432"
 
-  # ==========================================
-  # 2. IL GUARDIANO (Esegue i test E2E e Unitari)
-  # ==========================================
   backend-tester:
     build: app_be
     container_name: app-be-tester
@@ -33,9 +27,6 @@ services:
       # per creare il mini-database temporaneo isolato dal 'db' qui sopra.
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # ==========================================
-  # 3. L'APPLICAZIONE (L'API FastAPI)
-  # ==========================================
   backend:
     build: app_be
     tty: true
