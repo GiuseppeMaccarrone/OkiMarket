@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Float, Integer, ARRAY
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import String, Float, ForeignKey, ARRAY
 from datetime import datetime
+
 
 # --- Pydantic --- #
 class ProductSortBy(str, Enum):
@@ -49,6 +50,10 @@ class ProductModelAlchemy(BaseAlchemy):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     price: Mapped[float] = mapped_column(Float)
-    category_id: Mapped[int] = mapped_column(Integer)
-    tags: Mapped[list[str]] = mapped_column(ARRAY(String))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="RESTRICT"))
+    tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=[])
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    category: Mapped["CategoryModelAlchemy"] = relationship(
+        "CategoryModelAlchemy", back_populates="products"
+    )

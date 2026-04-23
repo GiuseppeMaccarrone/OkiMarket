@@ -8,6 +8,7 @@ from config.setup import config
 from tools.custom_logging import create_unified_logger
 from routes.base import router as base_router
 from routes.product_routes import router as products_router
+from routes.category_routes import router as category_routes
 
 
 class Service(FastAPI):
@@ -27,6 +28,7 @@ async def lifespan(service: Service):
 app = Service(lifespan=lifespan, title=config.app_name)
 app.include_router(base_router)
 app.include_router(products_router)
+app.include_router(category_routes)
 
 
 async def startup(service: Service):

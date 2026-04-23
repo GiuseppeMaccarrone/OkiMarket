@@ -8,54 +8,48 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from sqlalchemy import delete
 from models.product import ProductModelAlchemy
+from models.category import CategoryModelAlchemy
 
 
 # ==========================================
 # FIXTURE DI SETUP: Crea i dati per i test
 # ==========================================
 
-@pytest.fixture(autouse=True, scope="module")
-def setup_catalog(postgres_url):
-    """
-    Svuota il database e lo popola con esattamente 3 prodotti.
-    """
+@pytest.fixture(scope="function", autouse=True)
+async def setup_catalog(postgres_url):
+    # Usiamo una fixture asincrona nativa (niente asyncio.run)
+    test_engine = create_async_engine(postgres_url, poolclass=NullPool)
+    TestingSessionLocal = async_sessionmaker(bind=test_engine, expire_on_commit=False)
 
-    async def _seed_db():
-        test_engine = create_async_engine(postgres_url, poolclass=NullPool)
-        TestingSessionLocal = async_sessionmaker(bind=test_engine, expire_on_commit=False)
+    async with TestingSessionLocal() as session:
+        # Pulisci
+        await session.execute(delete(ProductModelAlchemy))
+        await session.execute(delete(CategoryModelAlchemy))
+        await session.commit()
 
-        # 1. 🔥 PULIZIA TOTALE: Svuotiamo la tabella dei prodotti
-        async with TestingSessionLocal() as session:
-            await session.execute(delete(ProductModelAlchemy))
-            await session.commit()
+        # Crea Categorie
+        cat_elettronica = CategoryModelAlchemy(name="Elettronica")
+        cat_casa = CategoryModelAlchemy(name="Casa")
+        session.add_all([cat_elettronica, cat_casa])
+        await session.commit()
+        await session.refresh(cat_elettronica)
+        await session.refresh(cat_casa)
 
-        # Patch sul servizio
-        import services.product_service
-        services.product_service.AsyncSessionLocal = TestingSessionLocal
-        from main import app
+        # Crea Prodotti
+        p1 = ProductModelAlchemy(name="Mouse Economico", price=10.00, category_id=cat_elettronica.id)
+        p2 = ProductModelAlchemy(name="Tastiera Meccanica", price=80.00, category_id=cat_elettronica.id)
+        p3 = ProductModelAlchemy(name="Monitor 4K", price=300.00, category_id=cat_casa.id)
+        session.add_all([p1, p2, p3])
+        await session.commit()
 
-        # 2. Inseriamo i 3 prodotti base
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as ac:
-            await ac.post("/products/create", json={
-                "name": "Mouse Economico", "price": 10.00, "category_id": 1, "tags": []
-            })
-            await ac.post("/products/create", json={
-                "name": "Tastiera Meccanica", "price": 80.00, "category_id": 1, "tags": []
-            })
-            await ac.post("/products/create", json={
-                "name": "Monitor 4K", "price": 300.00, "category_id": 2, "tags": []
-            })
-
-        await test_engine.dispose()
-
-    asyncio.run(_seed_db())
+    await test_engine.dispose()
 
 
 # ==========================================
-# 1. IL DATABASE: scope="session" (ORA SINCRONA)
+# 1. IL DATABASE: scope="function"
 # Usiamo 'def' normale per aggirare lo ScopeMismatch di pytest-asyncio
 # ==========================================
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def postgres_url():
     with PostgresContainer("postgres:16-alpine") as postgres:
         url = postgres.get_connection_url().replace("postgresql+psycopg2", "postgresql+asyncpg")
@@ -85,6 +79,9 @@ async def client(postgres_url):
 
     import services.product_service
     services.product_service.AsyncSessionLocal = TestingSessionLocal
+
+    import services.category_service
+    services.category_service.AsyncSessionLocal = TestingSessionLocal
 
     from main import app
 

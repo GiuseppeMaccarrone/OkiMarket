@@ -14,6 +14,7 @@ router = APIRouter(
     responses={404: {"description": "Page not found"}},
     prefix='/api/v1/products'
 )
+
 class ProductSort(str, Enum):
     price_asc = "price_asc"
     price_desc = "price_desc"

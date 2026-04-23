@@ -25,6 +25,9 @@ async def test_delete_product(client):
         "tags": ["test", "delete"]
     })
 
+    if create_response.status_code == 500:
+        print(f"\nDEBUG ERROR: {create_response.json()}")
+
     assert create_response.status_code == 201
     product_id = create_response.json()["id"]
 
