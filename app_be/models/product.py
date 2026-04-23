@@ -21,11 +21,16 @@ class ProductCreate(BaseModel):
     category_id: int
     tags: List[str] = []
     created_at: Optional[datetime] = datetime.now()
+    image_url: Optional[str] = None  # Opzionale
 
 
 class Product(ProductCreate):
     id: int
     created_at: datetime
+
+    @property
+    def full_image_url(self) -> str:
+        return self.image_url or "/static/images/default-product.png"
 
     class Config:
         from_attributes = True
@@ -53,6 +58,7 @@ class ProductModelAlchemy(BaseAlchemy):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="RESTRICT"))
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=[])
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    image_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
 
     category: Mapped["CategoryModelAlchemy"] = relationship(
         "CategoryModelAlchemy", back_populates="products"
