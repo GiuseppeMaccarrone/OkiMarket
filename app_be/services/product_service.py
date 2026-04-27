@@ -1,25 +1,40 @@
 
 from models.product import ProductModelAlchemy, ProductCreate, Product, ProductSortBy, ProductQueryParams
 from sqlalchemy import select, desc, asc, delete
+from sqlalchemy.exc import IntegrityError
 from config.database import AsyncSessionLocal
+from models.category import CategoryModelAlchemy
+
 
 class ProductService():
 
     async def create_product(self, product_data: ProductCreate):
         async with AsyncSessionLocal() as session:
             try:
-                # 1. Crea l'oggetto ORM
+                # 1. CONTROLLO: La categoria esiste?
+                category_stmt = select(CategoryModelAlchemy).where(CategoryModelAlchemy.id == product_data.category_id)
+                category_result = await session.execute(category_stmt)
+                category = category_result.scalar_one_or_none()
+
+                if not category:
+                    return 404, {"error": f"Categoria con ID {product_data.category_id} non trovata."}
+
+                # 2. Crea l'oggetto ORM
                 new_product = ProductModelAlchemy(**product_data.model_dump())
 
-                # 2. Aggiungi al db
+                # 3. Aggiungi al db
                 session.add(new_product)
                 await session.commit()
                 await session.refresh(new_product)
 
-                # 3. Restituisci il dizionario pulito
+                # 4. Restituisci il dizionario pulito
                 product_model = Product.model_validate(new_product)
                 return 201, product_model.model_dump(mode='json')
 
+            except IntegrityError as e:
+                # Questo cattura errori di vincoli (es. FK fallita all'ultimo secondo)
+                await session.rollback()
+                return 400, {"error": "Errore di integrità del database (chiave esterna non valida)."}
             except Exception as e:
                 await session.rollback()
                 return 500, {"error": str(e)}

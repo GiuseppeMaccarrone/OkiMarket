@@ -11,12 +11,12 @@ router = APIRouter(
 @router.get("/presigned-url")
 async def get_presigned_url(file_name: str):
     try:
-        # Genera un URL che scade in 10 minuti
         url = minio_client.presigned_put_object(
             bucket_name,
             file_name,
             expires=timedelta(minutes=10)
         )
-        return {"url": url}
+        return {"url": url, "file_path": file_name}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
