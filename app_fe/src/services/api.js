@@ -33,7 +33,31 @@ export const createProduct = async (productData) => {
   return await response.json();
 };
 
+export const updateProduct = async (id, productData) => {
+  const response = await fetch(`${API_BASE_URL}/products/update/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(productData)
+  });
+  if (!response.ok) throw new Error('Errore aggiornamento prodotto');
+  return await response.json();
+};
+
+export const deleteProduct = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/products/delete/${id}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Errore eliminazione prodotto');
+  return await response.json();
+};
+
 // --- CATEGORIE ---
+export const getCategoryById = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`);
+  if (!response.ok) throw new Error('Categoria non trovata');
+  return await response.json();
+};
+
 export const createCategory = async (name) => {
   const response = await fetch(`${API_BASE_URL}/categories/create`, {
     method: 'POST',

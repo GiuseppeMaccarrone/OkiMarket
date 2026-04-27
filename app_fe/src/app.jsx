@@ -7,6 +7,7 @@ import CategoryModal from './components/CategoryModal';
 import ProductModal from './components/ProductModal';
 import { SnackbarProvider } from './context/SnackbarContext';
 import CategoryManagerModal from './components/CategoryManagerModal';
+import ProductDetailModal from './components/ProductDetailModal';
 
 export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -23,6 +24,10 @@ export default function App() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+
+  const [selectedProductId, setSelectedProductId] = useState(null);
+
+  const [productToEdit, setProductToEdit] = useState(null);
 
   // Caricamento prodotti aggiornato con skip/limit
   const loadProducts = async (filters = null) => {
@@ -48,6 +53,20 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenEdit = (product) => {
+    setSelectedProductId(null); // Chiudi dettagli
+    setProductToEdit(product);  // Apri modifica
+  };
+
+  const handleAddToCart = (product) => {
+    const cartIds = JSON.parse(sessionStorage.getItem('cartIds') || '[]');
+    cartIds.push(product.id);
+    sessionStorage.setItem('cartIds', JSON.stringify(cartIds));
+    window.dispatchEvent(new Event('cartUpdated'));
+    // Qui servirebbe useSnackbar, ma siccome App è fuori dal provider,
+    // la notifica la gestiranno i componenti figli o la ProductCard stessa.
   };
 
   useEffect(() => {
@@ -77,7 +96,10 @@ export default function App() {
             </div>
           ) : (
             products.length > 0 ? (
-              <ProductList products={products} />
+              <ProductList
+                products={products}
+                onProductClick={(id) => setSelectedProductId(id)}
+              />
             ) : (
               <p style={{ textAlign: 'center' }}>Nessun prodotto trovato.</p>
             )
@@ -134,10 +156,26 @@ export default function App() {
           />
         )}
       </div>
-      <CategoryManagerModal
-        isOpen={showCategoryManager}
-        onClose={() => setShowCategoryManager(false)}
-      />
+    <CategoryManagerModal
+      isOpen={showCategoryManager}
+      onClose={() => setShowCategoryManager(false)}
+    />
+
+    <ProductDetailModal
+      productId={selectedProductId}
+      isOpen={!!selectedProductId}
+      onClose={() => setSelectedProductId(null)}
+      onAddToCart={handleAddToCart}
+      onEditClick={handleOpenEdit}
+      onDeleteSuccess={() => { setSelectedProductId(null); loadProducts(); }}
+    />
+
+    <ProductModal
+      isOpen={!!productToEdit}
+      initialData={productToEdit}
+      onClose={() => setProductToEdit(null)}
+      onRefresh={loadProducts}
+    />
     </SnackbarProvider>
   );
 }

@@ -1,13 +1,26 @@
+// src/components/ProductList.jsx
 import ProductCard from './ProductCard';
 
-export default function ProductList({ products }) {
+// Assicurati di aggiungere onProductClick qui nelle parentesi graffe!
+export default function ProductList({ products, onProductClick }) {
   return (
     <div style={styles.grid}>
-      {products.map(product => <ProductCard key={product.id} product={product} />)}
+      {products.map(product => (
+        <ProductCard
+          key={product.id}
+          product={product}
+          onProductClick={onProductClick} // <--- Fondamentale: passala qui!
+        />
+      ))}
     </div>
   );
 }
 
 const styles = {
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '45px', padding: '20px' }
+  grid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '20px',
+    justifyContent: 'center'
+  }
 };

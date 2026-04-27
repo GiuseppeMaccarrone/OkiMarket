@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSnackbar } from '../context/SnackbarContext'; // Importiamo il contesto
+import { useSnackbar } from '../context/SnackbarContext';
 
 // Icona SVG Carrello
 const CartIcon = ({ size = 18, color = "white" }) => (
@@ -19,28 +19,32 @@ const CartIcon = ({ size = 18, color = "white" }) => (
   </svg>
 );
 
-export default function ProductCard({ product }) {
-  const showSnackbar = useSnackbar(); // Inizializziamo lo snackbar
+export default function ProductCard({ product, onProductClick }) {
+  const showSnackbar = useSnackbar();
   const defaultImage = "/images/default-product.png";
 
   const imageUrl = (product.image_url && product.image_url.trim() !== "")
     ? `http://localhost:9000/products/${product.image_url}`
     : defaultImage;
 
-  const addToCart = (product) => {
+  // Gestione aggiunta al carrello
+  const addToCart = (e, product) => {
+    // IMPORTANTE: ferma la propagazione del click alla card sottostante
+    e.stopPropagation();
+
     const cartIds = JSON.parse(sessionStorage.getItem('cartIds') || '[]');
     cartIds.push(product.id);
     sessionStorage.setItem('cartIds', JSON.stringify(cartIds));
 
-    // Dispatch evento per la sidebar
     window.dispatchEvent(new Event('cartUpdated'));
-
-    // Feedback visivo
     showSnackbar(`${product.name} aggiunto al carrello!`);
   };
 
   return (
-    <div style={styles.card}>
+    <div
+      style={styles.card}
+      onClick={() => onProductClick(product.id)}
+    >
       <div style={styles.imageContainer}>
         <img
           src={imageUrl}
@@ -58,7 +62,7 @@ export default function ProductCard({ product }) {
 
           <button
             style={styles.cartButton}
-            onClick={() => addToCart(product)}
+            onClick={(e) => addToCart(e, product)}
             title={`Aggiungi ${product.name} al carrello`}
           >
             <CartIcon color="white" />
@@ -71,29 +75,54 @@ export default function ProductCard({ product }) {
 
 const styles = {
   card: {
-    border: '1px solid #ddd', borderRadius: '8px', padding: '16px',
-    marginLeft: '8px', marginRight: '8px', width: '200px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex',
-    flexDirection: 'column', backgroundColor: 'white', overflow: 'hidden'
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    padding: '16px',
+    marginLeft: '8px',
+    marginRight: '8px',
+    width: '200px',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: 'white',
+    overflow: 'hidden',
+    cursor: 'pointer', // Fa capire che la card è un bottone
+    transition: 'transform 0.1s ease', // Feedback al passaggio del mouse
   },
   imageContainer: {
-    width: '100%', paddingTop: '100%', position: 'relative',
-    backgroundColor: '#f9f9f9', borderRadius: '4px', marginBottom: '10px'
+    width: '100%',
+    paddingTop: '100%',
+    position: 'relative',
+    backgroundColor: '#f9f9f9',
+    borderRadius: '4px',
+    marginBottom: '10px'
   },
   image: {
-    position: 'absolute', top: 0, left: 0, width: '100%',
-    height: '100%', objectFit: 'contain'
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain'
   },
   info: { marginTop: '5px' },
   title: { fontSize: '16px', margin: '0 0 10px 0' },
   actionRow: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    borderTop: '1px solid #eee', paddingTop: '10px'
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTop: '1px solid #eee',
+    paddingTop: '10px'
   },
   cartButton: {
-    backgroundColor: '#FF9900', border: 'none', borderRadius: '4px',
-    padding: '8px 12px', cursor: 'pointer', display: 'flex',
-    alignItems: 'center', justifyContent: 'center'
+    backgroundColor: '#FF9900',
+    border: 'none',
+    borderRadius: '4px',
+    padding: '8px 12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   price: { color: '#2c3e50', fontWeight: 'bold', margin: 0, fontSize: '18px' },
 };
