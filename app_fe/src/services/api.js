@@ -50,6 +50,24 @@ export const getCategories = async () => {
   return await response.json();
 };
 
+export const updateCategory = async (id, name) => {
+  const response = await fetch(`${API_BASE_URL}/categories/update/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  if (!response.ok) throw new Error('Errore aggiornamento categoria');
+  return await response.json();
+};
+
+export const deleteCategory = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/categories/delete/${id}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Errore eliminazione categoria');
+  return await response.json();
+};
+
 // --- UTILITY IMMAGINI ---
 export const getPresignedUrl = async (fileName, fileType) => {
   const response = await fetch(`${API_BASE_URL}/storage/presigned-url?file_name=${fileName}`);

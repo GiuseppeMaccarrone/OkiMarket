@@ -1,15 +1,21 @@
 import { createCategory } from '../services/api';
+import { useSnackbar } from '../context/SnackbarContext'; // Importiamo il contesto
 
 export default function CategoryModal({ isOpen, onClose }) {
+  const showSnackbar = useSnackbar();
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const categoryName = e.target.name.value;
     try {
-      await createCategory(e.target.name.value);
+      await createCategory(categoryName);
+      showSnackbar(`Categoria "${categoryName}" creata con successo!`);
       onClose();
     } catch (error) {
-      alert("Errore durante il salvataggio della categoria");
+      console.error(error);
+      showSnackbar("Errore durante il salvataggio della categoria", true);
     }
   };
 

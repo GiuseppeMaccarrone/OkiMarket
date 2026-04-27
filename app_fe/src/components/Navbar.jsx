@@ -18,7 +18,20 @@ const CartIcon = ({ size = 24, color = "white" }) => (
   </svg>
 );
 
-export default function Navbar({ onCartClick, onSearch }) {
+const ListIcon = ({ size = 24, color = "white" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6"></line>
+    <line x1="8" y1="12" x2="21" y2="12"></line>
+    <line x1="8" y1="18" x2="21" y2="18"></line>
+    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+  </svg>
+);
+
+// Aggiunto onManageCategories nelle props
+export default function Navbar({ onCartClick, onSearch, onManageCategories }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Stato per le categorie
@@ -50,17 +63,18 @@ export default function Navbar({ onCartClick, onSearch }) {
       }
     };
     fetchCategories();
+
+    // Ascolta l'evento personalizzato se vuoi che la lista si aggiorni
+    // quando chiudi la modale manager (opzionale ma consigliato)
+    window.addEventListener('categoriesUpdated', fetchCategories);
+    return () => window.removeEventListener('categoriesUpdated', fetchCategories);
   }, []);
 
   const handleSearch = () => {
-    // Prepariamo un oggetto con i filtri
     const filters = { search, minPrice, maxPrice, sort };
-
-    // Aggiungiamo category_id solo se è presente e non è una stringa vuota
     if (category && category !== "") {
       filters.category_id = parseInt(category);
     }
-
     onSearch(filters);
     setIsFilterOpen(false);
   };
@@ -131,7 +145,21 @@ export default function Navbar({ onCartClick, onSearch }) {
       </div>
 
       <div style={styles.rightActions}>
-        <button style={styles.cartIconButton} onClick={onCartClick}>
+        {/* Pulsante Gestione Categorie */}
+        <button
+          style={styles.cartIconButton}
+          onClick={onManageCategories}
+          title="Gestisci Categorie"
+        >
+          <ListIcon color="white" size={24} />
+        </button>
+
+        {/* Pulsante Carrello */}
+        <button
+          style={styles.cartIconButton}
+          onClick={onCartClick}
+          title="Vedi Carrello"
+        >
           <CartIcon color="white" size={24} />
         </button>
       </div>
@@ -152,14 +180,11 @@ const styles = {
     padding: '8px 20px', backgroundColor: '#FF9900', border: 'none',
     borderRadius: '0 4px 4px 0', fontWeight: 'bold', cursor: 'pointer'
   },
-
-  // Stili per il pulsante minimalista
   filterWrapper: { position: 'relative', marginLeft: '15px', display: 'flex', alignItems: 'center' },
   filterIconButton: {
     cursor: 'pointer', backgroundColor: 'transparent', border: 'none',
     padding: '5px', display: 'flex', alignItems: 'center', outline: 'none'
   },
-
   filterPopover: {
     position: 'absolute', top: '130%', left: '50%', transform: 'translateX(-50%)',
     backgroundColor: 'white', width: '320px', padding: '20px', borderRadius: '8px',
@@ -197,7 +222,6 @@ const styles = {
     marginLeft: 'auto',
     gap: '20px',
   },
-
   cartIconButton: {
     cursor: 'pointer',
     backgroundColor: 'transparent',

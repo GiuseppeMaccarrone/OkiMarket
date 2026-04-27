@@ -6,6 +6,7 @@ import { getProducts } from './services/api';
 import CategoryModal from './components/CategoryModal';
 import ProductModal from './components/ProductModal';
 import { SnackbarProvider } from './context/SnackbarContext';
+import CategoryManagerModal from './components/CategoryManagerModal';
 
 export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -21,6 +22,7 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   // Caricamento prodotti aggiornato con skip/limit
   const loadProducts = async (filters = null) => {
@@ -58,6 +60,7 @@ export default function App() {
         <Navbar
           onCartClick={() => setIsCartOpen(true)}
           onSearch={loadProducts}
+          onManageCategories={() => setShowCategoryManager(true)}
         />
 
         <CartSidebar
@@ -131,6 +134,10 @@ export default function App() {
           />
         )}
       </div>
+      <CategoryManagerModal
+        isOpen={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
+      />
     </SnackbarProvider>
   );
 }
