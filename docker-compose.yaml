@@ -6,6 +6,8 @@ services:
     restart: always
     container_name: postgres
     hostname: db
+    networks:
+      - app-network
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -15,24 +17,12 @@ services:
     ports:
       - "5432:5432"
 
-  backend-tester:
-    build: app_be
-    container_name: app-be-tester
-    # Sovrascrive il comando per lanciare la suite di test
-    command: ["python", "-m", "pytest", "tests/", "-v", "-o", "asyncio_mode=auto", "-o", "asyncio_default_fixture_loop_scope=function"]
-    env_file:
-      - .env
-    volumes:
-      # CRITICO: Il "citofono" di Docker. Serve a testcontainers
-      # per creare il mini-database temporaneo isolato dal 'db' qui sopra.
-      - /var/run/docker.sock:/var/run/docker.sock
-
   backend:
     build: app_be
-    tty: true
-    stdin_open: true
-    container_name: app-be
-    hostname: app-be
+    container_name: app_be
+    hostname: app_be
+    networks:
+      - app-network
     ports:
       - "8000:8000"
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -40,6 +30,8 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    extra_hosts:
+      - "localhost:host-gateway" # Questo dice al container: "quando cerchi localhost, guarda l'IP del PC host"
     depends_on:
       db:
         condition: service_started
@@ -47,11 +39,23 @@ services:
       #  condition: service_completed_successfully
     restart: always
 
+  backend-tester:
+    build: app_be
+    container_name: app-be-tester
+    command: ["python", "-m", "pytest", "tests/", "-v", "-o", "asyncio_mode=auto"]
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - app-network
+
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
     container_name: minio
-    hostname: minio
+    networks:
+      - app-network
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -61,6 +65,22 @@ services:
     volumes:
       - minio_data:/data
 
+  frontend:
+    build: app_fe
+    container_name: app_fe
+    hostname: app_fe
+    networks:
+      - app-network
+    ports:
+      - "8080:80"
+    restart: always
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
   minio_data:
+
+networks:
+  app-network:
+    driver: bridge
