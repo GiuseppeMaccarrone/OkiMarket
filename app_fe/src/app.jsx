@@ -187,7 +187,7 @@ const styles = {
   fabPillClosed: { width: '60px', height: '60px', borderRadius: '30px', backgroundColor: '#FF9900', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', overflow: 'hidden', transition: 'all 0.4s' },
   fabPillOpen: { width: '220px', height: '60px', borderRadius: '30px', backgroundColor: '#FF9900', display: 'flex', alignItems: 'center', padding: '0 20px', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', overflow: 'hidden', transition: 'all 0.4s' },
   contentWrapper: { display: 'flex', alignItems: 'center', width: '100%', position: 'relative' },
-  plusIcon: { color: 'white', fontSize: '30px', fontWeight: 'bold', position: 'absolute', left: '20px', transition: 'opacity 0.2s' },
+  plusIcon: { color: 'white', fontSize: '30px', fontWeight: 'bold', position: 'absolute', left: '22.5px', transition: 'opacity 0.2s' },
   menuTextContent: { display: 'flex', alignItems: 'center', gap: '15px', whiteSpace: 'nowrap', transition: 'opacity 0.3s' },
   pillButton: { background: 'transparent', border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' },
   divider: { width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.5)' }

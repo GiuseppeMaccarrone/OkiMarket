@@ -130,7 +130,7 @@ const modalStyles = {
     borderBottom: '1px solid #eee', transition: 'background-color 0.2s'
   },
   catInfo: { display: 'flex', flexDirection: 'column', flex: 1 },
-  catName: { fontSize: '16px', fontWeight: '500', color: '#111' },
+  catName: { fontSize: '24px', fontWeight: '500', color: '#111' },
   catId: { fontSize: '12px', color: '#888', marginTop: '2px' },
   actions: { display: 'flex', gap: '15px' },
 
