@@ -73,3 +73,34 @@ async def test_filter_empty_result(client):
 
     data = response.json()
     assert data == []  # Deve essere una lista vuota, non un errore 404 o 500
+
+@pytest.mark.asyncio
+async def test_pagination(client):
+    """Verifica che skip e limit taglino correttamente i risultati."""
+    # Abbiamo 3 prodotti totali. Limit 2, Skip 1 dovrebbe darci solo il secondo e il terzo.
+    response = await client.get("/products/list", params={"limit": 2, "skip": 1})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    # Controlliamo che non sia il primo (Mouse)
+    assert data[0]["name"] != "Mouse Economico"
+
+@pytest.mark.asyncio
+async def test_list_invalid_params(client):
+    """Verifica che parametri assurdi tornino 422 e non crashino."""
+    # Test sort_by non esistente
+    response_sort = await client.get("/products/list", params={"sort_by": "random_sort"})
+    assert response_sort.status_code == 422
+
+    # Test limit troppo alto (le=100)
+    response_limit = await client.get("/products/list", params={"limit": 999})
+    assert response_limit.status_code == 422
+
+@pytest.mark.asyncio
+async def test_search_case_insensitive(client):
+    """Verifica che la ricerca 'monitor' (minuscolo) trovi 'Monitor 4K'."""
+    response = await client.get("/products/list", params={"search": "monitor"})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["name"] == "Monitor 4K"

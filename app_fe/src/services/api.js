@@ -9,7 +9,7 @@ export const getProducts = async (params = {}) => {
   if (params.category_id) backendParams.category_id = params.category_id;
   if (params.sort) backendParams.sort_by = params.sort;
   backendParams.skip = params.skip || 0;
-  backendParams.limit = params.limit || 4;
+  backendParams.limit = params.limit || 20;
 
   const queryString = new URLSearchParams(backendParams).toString();
   const response = await fetch(`${API_BASE_URL}/products/list?${queryString}`);

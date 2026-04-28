@@ -17,7 +17,7 @@ export default function App() {
   // Stato per paginazione
   const [page, setPage] = useState(0);
   const [currentFilters, setCurrentFilters] = useState({});
-  const LIMIT = 4;
+  const LIMIT = 20;
 
   // Modali
   const [isMenuOpen, setIsMenuOpen] = useState(false);
