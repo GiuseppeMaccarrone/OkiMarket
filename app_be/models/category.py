@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from pydantic import BaseModel, ConfigDict
+from sqlalchemy import String
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from models.product import BaseAlchemy
 
 # ==========================================
@@ -7,12 +8,24 @@ from models.product import BaseAlchemy
 # ==========================================
 
 class CategoryCreate(BaseModel):
-    name: str
+    # Validiamo la lunghezza: minimo 2 caratteri, massimo 100
+    name: str = Field(..., min_length=2, max_length=100)
+
+    @field_validator('name')
+    @classmethod
+    def clean_name(cls, v: str) -> str:
+        # Pulisce spazi, converte in formato leggibile (es: "Elettronica")
+        # .strip() rimuove spazi, .capitalize() rende la prima lettera maiuscola
+        cleaned = v.strip()
+        if not cleaned:
+            raise ValueError('Il nome della categoria non può essere vuoto')
+        return cleaned.capitalize()
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class Category(CategoryCreate):
     id: int
-
-    # Permette a Pydantic di leggere l'oggetto SQLAlchemy e trasformarlo in JSON
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -24,9 +37,12 @@ class CategoryModelAlchemy(BaseAlchemy):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(nullable=False, unique=True)
+    # Impostiamo una lunghezza massima anche nel DB per coerenza con Pydantic
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
     # Relazione: Una categoria ha molti prodotti
+    # Il cascade="all, delete-orphan" è utile se vuoi che eliminando la categoria
+    # si gestisca la relazione, ma attenzione al RESTRICT che hai nel prodotto!
     products: Mapped[list["ProductModelAlchemy"]] = relationship(
         "ProductModelAlchemy", back_populates="category"
     )

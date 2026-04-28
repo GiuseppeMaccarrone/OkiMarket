@@ -36,3 +36,20 @@ def test_query_params_search_length():
     # Testiamo se possiamo passare una stringa di ricerca lunga
     params = ProductQueryParams(search="smartphone")
     assert params.search == "smartphone"
+
+def test_query_params_price_ranges():
+    """Test che i prezzi siano coerenti (min < max)."""
+    # Nota: se vuoi validare che min <= max, devi aggiungere un validator nel modello
+    params = ProductQueryParams(min_price=100, max_price=200)
+    assert params.min_price == 100
+    assert params.max_price == 200
+
+def test_query_params_negative_prices():
+    """Test che non siano ammessi prezzi negativi."""
+    with pytest.raises(ValidationError):
+        ProductQueryParams(min_price=-50)
+
+def test_query_params_sort_enum_consistency():
+    """Verifica che il valore passato sia esattamente quello dell'Enum."""
+    params = ProductQueryParams(sort_by=ProductSortBy.PRICE_ASC)
+    assert params.sort_by == ProductSortBy.PRICE_ASC

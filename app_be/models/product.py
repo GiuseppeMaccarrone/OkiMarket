@@ -1,12 +1,14 @@
 from typing import List, Optional
 from enum import Enum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Float, ForeignKey, ARRAY, DateTime  # <-- AGGIUNTO DateTime QUI
-from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import String, Float, ForeignKey, ARRAY, DateTime
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from datetime import datetime, timezone
 
+# ==========================================
+# SCHEMI PYDANTIC (Validazione e API)
+# ==========================================
 
-# --- Pydantic --- #
 class ProductSortBy(str, Enum):
     PRICE_ASC = "price_asc"
     PRICE_DESC = "price_desc"
@@ -15,12 +17,22 @@ class ProductSortBy(str, Enum):
 
 
 class ProductCreate(BaseModel):
-    name: str
-    price: float = Field(..., ge=0)
-    category_id: int
-    tags: List[str] = []
+    # Validazione nome: non vuoto e massimo 255 caratteri
+    name: str = Field(..., min_length=1, max_length=255)
+    price: float = Field(..., gt=0)
+    category_id: int = Field(..., gt=0)
+    tags: List[str] = Field(default_factory=list)
     created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
-    image_url: Optional[str] = None
+    image_url: Optional[str] = Field(None, max_length=512)
+
+    # Validatore personalizzato per pulire il nome
+    @field_validator('name')
+    @classmethod
+    def name_must_not_be_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError('Il nome non può essere solo spazi bianchi')
+        return v.strip()
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -44,8 +56,18 @@ class ProductQueryParams(BaseModel):
     skip: int = Field(0, ge=0)
     limit: int = Field(10, ge=1, le=100)
 
+    @model_validator(mode='after')
+    def validate_price_range(self):
+        if self.min_price is not None and self.max_price is not None:
+            if self.min_price > self.max_price:
+                raise ValueError("min_price non può essere maggiore di max_price")
+        return self
 
-# --- Sql Alchemy --- #
+
+# ==========================================
+# MODELLI SQLALCHEMY (Database)
+# ==========================================
+
 class BaseAlchemy(DeclarativeBase):
     pass
 
