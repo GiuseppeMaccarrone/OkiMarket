@@ -11,3 +11,4 @@ pytest-asyncio
 httpx
 testcontainers[postgres]
 minio
+pytest-xdist
