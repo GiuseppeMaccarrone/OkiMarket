@@ -31,10 +31,13 @@ Il progetto è completamente containerizzato tramite Docker. Non è necessaria a
 │   ├── services/           # Logica pricipale BE
 │   ├── tests/              # Suite di testing
 │   └── alembic/            # Versionamento del database
+│   ...
+│   ...
 ├── app_fe/                 # Frontend (React)
 │   └── src/
 │       └── components/     # Componenti UI (es. ProductCard.jsx)
-├── tests/                  # Suite di test
+│   ...
+│   ...
 ├── docker-compose.yaml     # Orchestrazione servizi
 └── README.md               # Documentazione
 ```
