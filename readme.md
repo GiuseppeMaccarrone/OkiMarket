@@ -1,65 +1,54 @@
-# Mini Catalogo Prodotti
+# OkiMarket - Prototipo E-commerce Full-Stack
 
-**Obiettivo:** realizzare una piccola applicazione **full-stack** (frontend + backend + database) per la gestione di un catalogo prodotti con categorie.
+OkiMarket è un prototipo avanzato di piattaforma e-commerce costruito con un'architettura a microservizi. Il progetto è focalizzato su prestazioni asincrone, integrità dei dati e automazione del workflow di sviluppo.
 
----
+## Avvio Rapido (Zero Configuration)
 
-## Requisiti
+Il progetto è completamente containerizzato tramite Docker. Non è necessaria alcuna configurazione manuale di database o storage locali.
 
-### Funzionalità
-- **Prodotti**
-  - Campi minimi: `id`, `name`, `price`, `category_id`, `tags`, `created_at`.
-  - Operazioni: list, get by id, create, update, delete.
-  - List: ricerca testuale, filtro per categoria, filtro per prezzo minimo/massimo, ordinamento per prezzo o data di creazione, paginazione.
-  - Validazioni: `name` obbligatorio; `price` ≥ 0; `category_id` valido se presente.
+1. **Clonare il repository**
 
-- **Categorie**
-  - Campi minimi: `id`, `name`.
-  - Operazioni: list, create.
 
-- **Frontend**
-  - Vista elenco prodotti con ricerca/filtri/ordinamento/paginazione.
-  - Form creazione/modifica prodotto.
-  - Visualizzazione chiara degli stati (caricamento/errore/successo).
+2. **Configurare l'ambiente**: Creare un file `.env` nella radice del progetto partendo dall'esempio fornito:
+   ```bash
+   cp .env.example .env
+   ```
+    Assicurati di avere [Docker](https://docs.docker.com/) installato.
 
-- **Backend**
-  - API REST con routing chiaro e status code coerenti.
-  - Filtri, ordinamento e paginazione gestiti lato server.
 
-- **Database**
-  - Persistenza relazionale (PostgreSQL consigliato; in alternativa SQLite).
-  - Migrazioni o script di inizializzazione.
+3. **Avvia i servizi**:
+   ```bash
+   docker-compose up --build
+   ```
 
-- **Avvio**
-  - Preferibile utilizzo di **Docker/Docker Compose** per avvio rapido (app + DB).
-  - Variabili di ambiente tramite file dedicato (es. `.env.example`).
+# Struttura del Progetto
 
----
+```text
+.
+├── app_be/                 # Backend (FastAPI)
+│   ├── routes/             # Endpoint API (es. product_routes.py)
+│   ├── models/             # Modelli DB e Pydantic
+│   ├── services/           # Logica pricipale BE
+│   ├── tests/              # Suite di testing
+│   └── alembic/            # Versionamento del database
+├── app_fe/                 # Frontend (React)
+│   └── src/
+│       └── components/     # Componenti UI (es. ProductCard.jsx)
+├── tests/                  # Suite di test
+├── docker-compose.yaml     # Orchestrazione servizi
+└── README.md               # Documentazione
+```
 
-## Consegna (obbligatoria su GitHub)
+## Frontend
+- **Libreria**: React.js
+- **Componentistica**: UI basata su componenti modulari (es. `ProductCard.jsx`)
 
-1. Pubblica il progetto in una **repository GitHub** (pubblica o privata con accesso fornito su richiesta).
-2. Includi:
-   - Codice **frontend** e **backend**.
-   - **`README.md`** con istruzioni di avvio (Docker e avvio locale), configurazione variabili, comandi per migrazioni/seed, e comandi test.
-   - **`docker-compose.yml`** e relativi **Dockerfile**.
-   - Migrazioni o script DB; file `.env.example`.
-3. Usa **commit granulari** con messaggi chiari; evita un unico commit cumulativo.
-4. Tagga una release (es. `v0.1`) o fornisci branch di consegna dedicata.
+## Backend
+Il progetto è costruito seguendo standard rigorosi per garantire la massima stabilità:
 
----
+- **Restrizioni dei Modelli**: Utilizziamo le definizioni dei modelli (Pydantic/SQLAlchemy) per imporre vincoli rigorosi sui dati in ingresso, prevenendo input invalidi prima ancora che raggiungano il database. L'uso di strutture tipizzate come `ProductSort` in `app_be/routes/product_routes.py` garantisce coerenza nei dati scambiati.
+- **Gestione Migrazioni**: Grazie ad **Alembic**, ogni modifica allo schema del database è tracciata, versionata e testabile, eliminando i conflitti di schema tra ambienti diversi.
+- **Testing**: La suite di test copre i casi critici del business logic. L'integrazione con CI/CD assicura che ogni commit mantenga intatta l'integrità del sistema.
 
-## Vincoli
-
-- **Stack:** a scelta (linguaggi e framework liberi).
-- **Qualità attesa:** struttura chiara, coerenza stilistica, gestione errori, documentazione minima essenziale.
-
----
-
-## Criteri di valutazione
-
-- **Completezza funzionale**  
-- **Qualità e organizzazione del codice**  
-- **Correttezza API e validazioni**  
-- **UX essenziale del frontend**  
-- **Developer Experience (README, avvio rapido, migrazioni/test di base)**
+### Infrastruttura
+- **Containerizzazione**: Docker & Docker Compose
