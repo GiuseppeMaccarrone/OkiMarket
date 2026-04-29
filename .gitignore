@@ -12,6 +12,8 @@ env/
 __pycache__/
 *.pyc
 *.pyo
+*.py[cod]
+*$py.class
 
 # IDE e editor
 .vscode/
@@ -28,3 +30,6 @@ build/
 .env
 .env.local
 .env.*.local
+
+# Alembic cache
+app_be/alembic/__pycache__/
