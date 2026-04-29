@@ -12,3 +12,4 @@ httpx
 testcontainers[postgres]
 minio
 pytest-xdist
+alembic

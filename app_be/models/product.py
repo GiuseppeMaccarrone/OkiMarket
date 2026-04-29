@@ -4,6 +4,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, Float, ForeignKey, ARRAY, DateTime
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from datetime import datetime, timezone
+from config.database import BaseAlchemy
 
 # ==========================================
 # SCHEMI PYDANTIC (Validazione e API)
@@ -67,10 +68,6 @@ class ProductQueryParams(BaseModel):
 # ==========================================
 # MODELLI SQLALCHEMY (Database)
 # ==========================================
-
-class BaseAlchemy(DeclarativeBase):
-    pass
-
 
 class ProductModelAlchemy(BaseAlchemy):
     __tablename__ = "products"

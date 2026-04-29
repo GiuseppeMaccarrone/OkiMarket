@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from models.product import BaseAlchemy
+from config.database import BaseAlchemy
 
 # ==========================================
 # SCHEMI PYDANTIC (Validazione e API)

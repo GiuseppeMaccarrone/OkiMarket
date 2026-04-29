@@ -72,9 +72,11 @@ async def download_and_upload_image(category_name, object_name):
 
 async def seed_db():
     print("Avvio Seeding con immagini reali...")
-    engine = get_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(BaseAlchemy.metadata.create_all)
+
+    # DONE BY ALEMBIC
+    # engine = get_engine()
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(BaseAlchemy.metadata.create_all)
 
     async with AsyncSessionLocal() as session:
         # Controllo se il DB è già popolato
